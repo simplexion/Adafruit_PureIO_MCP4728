@@ -34,8 +34,7 @@ setup(
     author="Adafruit Industries",
     author_email="circuitpython@adafruit.com",
     install_requires=[
-        "Adafruit-Blinka",
-        "adafruit-circuitpython-busdevice",
+        "Adafruit_PureIO",
     ],
     # Choose your license
     license="MIT",
@@ -51,7 +50,7 @@ setup(
         "Programming Language :: Python :: 3.5",
     ],
     # What does your project relate to?
-    keywords="adafruit blinka circuitpython micropython mcp4728 dac 12-bit quad i2c",
+    keywords="adafruit pureio micropython mcp4728 dac 12-bit quad i2c",
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
     # TODO: IF LIBRARY FILES ARE A PACKAGE FOLDER,

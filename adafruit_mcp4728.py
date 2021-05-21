@@ -23,7 +23,7 @@ Implementation Notes
 * Adafruit PureIO Python library for access to Linux IO including I2C: https://github.com/adafruit/Adafruit_Python_PureIO
 """
 
-__version__ = "0.0.0-auto.0"
+__version__ = "1.2.0"
 __repo__ = "https://github.com/simplexion/Adafruit_PureIO_MCP4728"
 
 from struct import pack_into
