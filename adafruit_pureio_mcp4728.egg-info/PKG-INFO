@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
-Name: adafruit-circuitpython-mcp4728
-Version: 1.2.1.dev7+gc6f0556
+Name: adafruit-pureio-mcp4728
+Version: 1.2.1.dev8+g8787778.d20210521
 Summary: Helper library for the MCP4728 I2C 12-bit Quad DAC
 Home-page: https://github.com/adafruit/Adafruit_CircuitPython_MCP4728
 Author: Adafruit Industries
