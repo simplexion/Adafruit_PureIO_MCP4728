@@ -23,7 +23,8 @@ with open(path.join(here, "README.rst"), encoding="utf-8") as f:
 
 setup(
     name="adafruit-circuitpython-mcp4728",
-    use_scm_version={"root": ".", "relative_to": __file__},
+    # use_scm_version={"root": ".", "relative_to": __file__},
+    use_scm_version=True,
     setup_requires=["setuptools_scm"],
     description="Helper library for the MCP4728 I2C 12-bit Quad DAC",
     long_description=long_description,
