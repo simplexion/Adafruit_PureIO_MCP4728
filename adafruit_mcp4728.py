@@ -20,17 +20,14 @@ Implementation Notes
 
 **Software and Dependencies:**
 
-* Adafruit CircuitPython firmware for the supported boards: https://circuitpython.org/downloads
-* Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
-* Adafruit's Register library: https://github.com/adafruit/Adafruit_CircuitPython_Register
+* Adafruit PureIO Python library for access to Linux IO including I2C: https://github.com/adafruit/Adafruit_Python_PureIO
 """
 
 __version__ = "0.0.0-auto.0"
-__repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_MCP4728.git"
+__repo__ = "https://github.com/simplexion/Adafruit_PureIO_MCP4728"
 
 from struct import pack_into
 from time import sleep
-import adafruit_bus_device.i2c_device as i2c_device
 
 _MCP4728_DEFAULT_ADDRESS = 0x60
 
@@ -83,7 +80,7 @@ Vref.add_values(
 class MCP4728:
     """Helper library for the Microchip MCP4728 I2C 12-bit Quad DAC.
 
-    :param ~busio.I2C i2c_bus: The I2C bus the MCP4728 is connected to.
+    :param ~Adafruit_PureIO.smbus.SMBus sm_bus: The I2C bus the MCP4728 is connected to.
     :param int address: The I2C device address. Defaults to :const:`0x60`
 
 
@@ -94,30 +91,30 @@ class MCP4728:
 
         .. code-block:: python
 
-            import board
+            from Adafruit_PureIO import smbus
             import adafruit_mcp4728
 
-        Once this is done you can define your `board.I2C` object and define your sensor object
+        Once this is done you can define your `smbus.SMBus` object and define your sensor object
 
         .. code-block:: python
-
-            i2c = board.I2C()   # uses board.SCL and board.SDA
-            mcp4728 = adafruit_mcp4728.MCP4728(i2c)
+            with smbus.SMBus(1) as sm_bus: # use /dev/i2c-1
+                mcp4728 = adafruit_mcp4728.MCP4728(sm_bus)
 
         Now you have can give values to the different channels
 
         .. code-block:: python
 
-            mcp4728.channel_a.value = 65535  # Voltage = VDD
-            mcp4728.channel_b.value = int(65535 / 2)  # VDD/2
-            mcp4728.channel_c.value = int(65535 / 4)  # VDD/4
-            mcp4728.channel_d.value = 0  # 0V
+                mcp4728.channel_a.value = 65535  # Voltage = VDD
+                mcp4728.channel_b.value = int(65535 / 2)  # VDD/2
+                mcp4728.channel_c.value = int(65535 / 4)  # VDD/4
+                mcp4728.channel_d.value = 0  # 0V
 
     """
 
-    def __init__(self, i2c_bus, address=_MCP4728_DEFAULT_ADDRESS):
+    def __init__(self, sm_bus, address=_MCP4728_DEFAULT_ADDRESS):
 
-        self.i2c_device = i2c_device.I2CDevice(i2c_bus, address)
+        self.sm_bus = sm_bus
+        self.address = address
 
         raw_registers = self._read_registers()
 
@@ -138,10 +135,7 @@ class MCP4728:
         return {"value": value, "vref": vref, "gain": gain, "power_state": power_state}
 
     def _read_registers(self):
-        buf = bytearray(24)
-
-        with self.i2c_device as i2c:
-            i2c.readinto(buf)
+        buf =  self.sm_bus.read_bytes(self.address, 24)
 
         # stride is 6 because we get 6 bytes for each channel; 3 for the output regs
         # and 3 for the eeprom. Here we only care about the output register so we throw out
@@ -173,8 +167,7 @@ class MCP4728:
 
         buf = bytearray(buffer_list)
 
-        with self.i2c_device as i2c:
-            i2c.write(buf)
+        self.sm_bus.write_bytes(self.address, buf)
 
         sleep(0.015)  # the better to write you with
 
@@ -188,8 +181,7 @@ class MCP4728:
 
         buf = bytearray(1)
         pack_into(">B", buf, 0, gain_setter_command)
-        with self.i2c_device as i2c:
-            i2c.write(buf)
+        self.sm_bus.write_bytes(self.address, buf)
 
     def sync_gains(self):
         """Syncs the driver's gain state with the DAC"""
@@ -203,8 +195,7 @@ class MCP4728:
         buf = bytearray(1)
         pack_into(">B", buf, 0, sync_setter_command)
 
-        with self.i2c_device as i2c:
-            i2c.write(buf)
+        self.sm_bus.write_bytes(self.address, buf)
 
     def _set_value(self, channel):
 
@@ -216,8 +207,7 @@ class MCP4728:
         output_buffer = bytearray([write_command_byte])
         output_buffer.extend(channel_bytes)
 
-        with self.i2c_device as i2c:
-            i2c.write(output_buffer)
+        self.sm_bus.write_bytes(self.address, output_buffer)
 
     @staticmethod
     def _generate_bytes_with_flags(channel):
@@ -241,8 +231,7 @@ class MCP4728:
 
         buf = bytearray(buffer_list)
 
-        with self.i2c_device as i2c:
-            i2c.write(buf)
+        self.sm_bus.write_bytes(self.address, buf)
 
     def reset(self):
         """Internal Reset similar to a Power-on Reset (POR).
